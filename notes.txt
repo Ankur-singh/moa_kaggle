@@ -1,0 +1,24 @@
+1. Local CV
+-----------
+- Make a local CV
+- Try to improve it by trying different idea
+
+## Ideas ##
+-----------
+Models
+------
+- use deeper model
+- use Fastai model
+- see what other people have used
+
+Scheduler
+---------
+- ReduceonPlatue
+- OneCycleLR
+- see what other people have used 
+
+Others
+------
+- Weight decay
+
+ 

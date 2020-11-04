@@ -127,3 +127,10 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# custom
+data/
+models/
+exp_models/
+checkpoints/
+*.ipynb
