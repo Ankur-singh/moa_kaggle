@@ -37,9 +37,10 @@ class MoANet(nn.Module):
         return x
 
 class MoAModel(pl.LightningModule):
-    def __init__(self, net):
+    def __init__(self, net, config):
         super().__init__()
         self.net = net
+        self.config = config
     
     def forward(self, x):
         x = self.net(x)
@@ -67,7 +68,12 @@ class MoAModel(pl.LightningModule):
         optimizer = torch.optim.Adam(self.net.parameters(), lr=1e-3, weight_decay=1e-5)    
         # lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=5)
         # scheduler = {'scheduler': lr_scheduler, 'interval': 'epoch', 'monitor': 'val_loss'}
-        lr_scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer, pct_start=0.1, div_factor=1e3, 
-                                              max_lr=1e-2, steps_per_epoch=steps_per_epochs, epochs=epochs)
+        lr_scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer, 
+                                                            pct_start=0.1,
+                                                            div_factor=1e3, 
+                                                            max_lr=1e-2, 
+                                                            steps_per_epoch=self.config.steps_per_epochs, 
+                                                            epochs=self.config.epochs)
+                                                            
         scheduler = {'scheduler': lr_scheduler, 'interval': 'step', 'monitor': 'val_loss'}
         return [optimizer], [scheduler]
