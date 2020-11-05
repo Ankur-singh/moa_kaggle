@@ -78,13 +78,13 @@ class MoADataModule(pl.LightningDataModule):
     
     def train_dataloader(self):
         return DataLoader(self.train_dataset, 
-                          batch_size=256, 
+                          batch_size=128, 
                           num_workers=2, 
                           pin_memory=True)
 
     def val_dataloader(self):
         return DataLoader(self.valid_dataset, 
-                          batch_size=256, 
+                          batch_size=128, 
                           num_workers=2, 
                           pin_memory=True)
 
