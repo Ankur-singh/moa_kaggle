@@ -1,24 +1,31 @@
-1. Local CV
------------
-- Make a local CV
-- Try to improve it by trying different idea
-
 ## Ideas ##
 -----------
-Models
-------
+- Feature Engineering (worked) and Loss smoothing (didn't work) for training. Refer: https://www.kaggle.com/kushal1506/moa-pytorch-feature-engineering-0-01846
+- better values for PCA (genes and cells components) and variance threshold. Refer: https://www.kaggle.com/vbmokin/moa-pytorch-rankgauss-pca-nn-upgrade-3d-visual
+- seed (train more than 7 models) can reduce the score to 0.01859 points
+
+Use non-Scored training set
+---------------------------
+- transfer learning. Take a high preforming model, make predictions and then train the model on the complete dataset again. Just like pseudo labeling. Refer https://www.kaggle.com/kailex/moa-transfer-recipe-with-smoothing
+
+
+Use train_drugs.csv - Done
+--------------------------
+- Make a local CV 
+- create better cross-validation distribution. 
+
+Models - Done
+-------------
 - use deeper model
 - use Fastai model
 - see what other people have used
 
-Scheduler
----------
+Scheduler - Done
+----------------
 - ReduceonPlatue
 - OneCycleLR
 - see what other people have used 
 
-Others
-------
+Others - Done
+-------------
 - Weight decay
-
- 

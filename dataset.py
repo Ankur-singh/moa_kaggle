@@ -32,36 +32,41 @@ class TestDataset(Dataset):
 
 ## Lightning data module
 class MoADataModule(pl.LightningDataModule):
-    def __init__(self, data_dir, fold):
+    def __init__(self, data_dir, fold, out_path=None):
         super().__init__()
         self.data_dir = data_dir
         self.fold = fold
+        self.drive_path = data_dir if out_path == None else out_path
 
     def prepare_data(self):
-        if not (self.data_dir/'folds.csv').exists():
+        if not (self.drive_path/'folds.csv').exists():
             print('NO folds.csv found. . . . creating it!')
             train_features       = pd.read_csv(self.data_dir/'train_features.csv')
             train_targets_scored = pd.read_csv(self.data_dir/'train_targets_scored.csv')
             test_features        = pd.read_csv(self.data_dir/'test_features.csv')
+            drug                 = pd.read_csv(self.data_dir/'train_drug.csv')
 
-            folds, test, feature_cols, target_cols = prepare(train_features, test_features, train_targets_scored)
+            targets = train_targets_scored.columns[1:]
+            train_targets_scored = train_targets_scored.merge(drug, on='sig_id', how='left') 
+
+            folds, test, feature_cols, target_cols = prepare(train_features, test_features, train_targets_scored, targets)
             
-            self.data_dir.mkdir(exist_ok=True)
+            self.drive_path.mkdir(exist_ok=True)
             
-            folds.to_csv(self.data_dir/'folds.csv', index=False)
-            test .to_csv(self.data_dir/'test.csv' , index=False)
+            folds.to_csv(self.drive_path/'folds.csv', index=False)
+            test .to_csv(self.drive_path/'test.csv' , index=False)
 
             columns = {'features': feature_cols, 'targets': target_cols}
-            joblib.dump(columns, self.data_dir/'columns.pkl')
+            joblib.dump(columns, self.drive_path/'columns.pkl')
             
-            print(f'Done! . . . . path: {self.data_dir}')
+            print(f'Done! . . . . path: {self.drive_path}')
         else:
-            print(f'Already exists! . . . . path: {self.data_dir}')
+            print(f'Already exists! . . . . path: {self.drive_path}')
 
     def setup(self, stage=0):
         # Train
-        train = pd.read_csv(self.data_dir/'folds.csv')
-        cols = joblib.load(self.data_dir/'columns.pkl')
+        train = pd.read_csv(self.drive_path/'folds.csv')
+        cols  = joblib.load(self.drive_path/'columns.pkl')
         feature_cols, target_cols = cols['features'], cols['targets']
 
         self.trn_idx = train[train['kfold'] != self.fold].index
