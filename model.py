@@ -5,7 +5,7 @@ import pytorch_lightning as pl
 
 def BnDropLin(hs1, hs2):
     return [nn.BatchNorm1d(hs1),
-            nn.Dropout(0.4),
+            nn.Dropout(0.2),
             nn.utils.weight_norm(nn.Linear(hs1, hs2)),
             nn.ReLU()]
 
@@ -13,6 +13,7 @@ class MoANet(nn.Module):
     def __init__(self, num_features, num_targets, hidden_sizes):
         super().__init__()
         self.batch_norm1 = nn.BatchNorm1d(num_features)
+        self.dropout1 = nn.Dropout(0.2)
         self.dense1 = nn.utils.weight_norm(nn.Linear(num_features, hidden_sizes[0]))
         
         layers = []
@@ -21,12 +22,13 @@ class MoANet(nn.Module):
         self.layers = nn.Sequential(*layers)
         
         self.batch_norm3 = nn.BatchNorm1d(hidden_sizes[-1])
-        self.dropout3 = nn.Dropout(0.4)
+        self.dropout3 = nn.Dropout(0.2)
         self.dense3 = nn.utils.weight_norm(nn.Linear(hidden_sizes[-1], num_targets))
     
     def forward(self, x):
         x = self.batch_norm1(x)
-        x = F.relu(self.dense1(x))
+        x = self.dropout1(x)
+        x = F.leaky_relu(self.dense1(x), 1e-3)
         
         x = self.layers(x)
         
