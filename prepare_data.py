@@ -144,7 +144,7 @@ def process_score(scored, targets, seed=42, folds=7):
 
 def prepare(train, test, scored, targets, fe):
     train, test = process(train, test, fe)
-    train_scored = process_score(scored, targets)
+    scored = process_score(scored, targets)
     
     # merge features with scores
     folds = train.merge(scored, on='sig_id')
