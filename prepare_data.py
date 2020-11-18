@@ -93,7 +93,7 @@ def fe_stats(train, test):
         
     return train, test
 
-def process(train, test):
+def process(train, test, fe=False):
     GENES = [col for col in train.columns if col.startswith('g-')]
     CELLS = [col for col in train.columns if col.startswith('c-')]
     
@@ -108,8 +108,9 @@ def process(train, test):
     train, test = select_features(train, test)
     
     # feature engineering
-    train, test = fe_cluster(train, test)
-    train, test = fe_stats  (train, test)
+    if fe:
+        train, test = fe_cluster(train, test)
+        train, test = fe_stats  (train, test)
     return train, test
 
 def process_score(scored, targets, seed=42, folds=7):
