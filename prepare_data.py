@@ -141,8 +141,8 @@ def process_score(scored, targets, seed=42, folds=7):
     scored.kfold = scored.kfold.astype('int8')
     return scored
 
-def prepare(train, test, scored, targets):
-    train, test = process(train, test)
+def prepare(train, test, scored, targets, fe):
+    train, test = process(train, test, fe)
     train_scored = process_score(scored, targets)
     
     # merge features with scores
