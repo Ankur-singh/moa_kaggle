@@ -3,6 +3,34 @@ import torch.nn as nn
 import torch.nn.functional as F
 import pytorch_lightning as pl
 
+from torch.nn.modules.loss import _WeightedLoss
+
+class SmoothBCEwLogits(_WeightedLoss):
+    def __init__(self, weight=None, reduction='mean', smoothing=0.0):
+        super().__init__(weight=weight, reduction=reduction)
+        self.smoothing = smoothing
+        self.weight = weight
+        self.reduction = reduction
+
+    @staticmethod
+    def _smooth(targets:torch.Tensor, n_labels:int, smoothing=0.0):
+        assert 0 <= smoothing < 1
+        with torch.no_grad():
+            targets = targets * (1.0 - smoothing) + 0.5 * smoothing
+        return targets
+
+    def forward(self, inputs, targets):
+        targets = SmoothBCEwLogits._smooth(targets, inputs.size(-1),
+            self.smoothing)
+        loss = F.binary_cross_entropy_with_logits(inputs, targets,self.weight)
+
+        if  self.reduction == 'sum':
+            loss = loss.sum()
+        elif  self.reduction == 'mean':
+            loss = loss.mean()
+
+        return loss
+
 def BnDropLin(hs1, hs2):
     return [nn.BatchNorm1d(hs1),
             nn.Dropout(0.2),
@@ -43,6 +71,8 @@ class MoAModel(pl.LightningModule):
         super().__init__()
         self.net = net
         self.config = config
+        self.loss_tr = SmoothBCEwLogits(smoothing =0.001) 
+        self.loss_fn = nn.BCEWithLogitsLoss()
     
     def forward(self, x):
         x = self.net(x)
@@ -51,7 +81,7 @@ class MoAModel(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         x, y = batch['x'], batch['y']
         y_hat = self.net(x)
-        loss = F.binary_cross_entropy_with_logits(y_hat, y)
+        loss = self.loss_tr(y_hat, y)
         
         # logs metrics for each training_step,
         # and the average across the epoch, to the progress bar and logger
@@ -62,7 +92,7 @@ class MoAModel(pl.LightningModule):
     def validation_step(self, batch, batch_idx):
         x, y = batch['x'], batch['y']
         y_hat = self.net(x)
-        loss = F.binary_cross_entropy_with_logits(y_hat, y)
+        loss = self.loss_fn(y_hat, y)
         self.log('val_loss', loss, on_epoch=True, prog_bar=True)
         return loss
 
