@@ -32,11 +32,12 @@ class TestDataset(Dataset):
 
 ## Lightning data module
 class MoADataModule(pl.LightningDataModule):
-    def __init__(self, data_dir, fold, out_path=None):
+    def __init__(self, data_dir, fold, out_path=None, fe=False):
         super().__init__()
         self.data_dir = data_dir
         self.fold = fold
         self.drive_path = data_dir if out_path == None else out_path
+        self.fe = fe
 
     def prepare_data(self):
         if not (self.drive_path/'folds.csv').exists():
@@ -49,7 +50,7 @@ class MoADataModule(pl.LightningDataModule):
             targets = train_targets_scored.columns[1:]
             train_targets_scored = train_targets_scored.merge(drug, on='sig_id', how='left') 
 
-            folds, test, feature_cols, target_cols = prepare(train_features, test_features, train_targets_scored, targets)
+            folds, test, feature_cols, target_cols = prepare(train_features, test_features, train_targets_scored, targets, self.fe)
             
             self.drive_path.mkdir(exist_ok=True)
             
