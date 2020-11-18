@@ -109,6 +109,7 @@ def process(train, test, fe=False):
     
     # feature engineering
     if fe:
+        print('Creating features')
         train, test = fe_cluster(train, test)
         train, test = fe_stats  (train, test)
     return train, test
