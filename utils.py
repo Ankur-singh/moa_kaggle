@@ -4,9 +4,7 @@ import random
 import numpy as np
 from sklearn.metrics import log_loss
 
-SEED = 42
-
-def seed_everything(seed=SEED):
+def seed_everything(seed=47):
     random.seed(seed)
     os.environ['PYTHONHASHSEED'] = str(seed)
     np.random.seed(seed)
