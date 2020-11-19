@@ -9,16 +9,18 @@ import warnings
 warnings.filterwarnings('ignore')
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
+SEED = 42
+
 ## Data Utils functions
 def RankGauss(train, test, cols):
-    transformer = QuantileTransformer(n_quantiles=100,random_state=0, output_distribution="normal")
+    transformer = QuantileTransformer(n_quantiles=100, random_state=SEED, output_distribution="normal")
     train[cols] = transformer.fit_transform(train[cols])
     test [cols] = transformer.transform(test[cols])
     return train, test
 
 def get_pca(train, test, cols, n_comp, prefix):
     data = pd.concat([train[cols], test[cols]])
-    data2 = (PCA(n_components=n_comp, random_state=42).fit_transform(data[cols]))
+    data2 = (PCA(n_components=n_comp, random_state=SEED).fit_transform(data[cols]))
     train2 = data2[:train.shape[0]] 
     test2  = data2[-test.shape[0]:]
 
@@ -49,7 +51,7 @@ def select_features(train, test):
     test = pd.concat([test, pd.DataFrame(test_transformed)], axis=1)
     return train, test
 
-def fe_cluster(train, test, n_clusters_g = 35, n_clusters_c = 5, SEED = 123):
+def fe_cluster(train, test, n_clusters_g=35, n_clusters_c=5, SEED=SEED):
     
     features_g = list(train.columns[4:776])
     features_c = list(train.columns[776:876])
@@ -93,7 +95,7 @@ def fe_stats(train, test):
         
     return train, test
 
-def process(train, test, fe=False):
+def process(train, test, fe):
     GENES = [col for col in train.columns if col.startswith('g-')]
     CELLS = [col for col in train.columns if col.startswith('c-')]
     
@@ -107,14 +109,14 @@ def process(train, test, fe=False):
     # select features uing variance thresholding
     train, test = select_features(train, test)
     
-    # feature engineering
     if fe:
-        print('Creating features')
+        print('Engineering New Features!')
+        # feature engineering
         train, test = fe_cluster(train, test)
         train, test = fe_stats  (train, test)
     return train, test
 
-def process_score(scored, targets, seed=42, folds=7):
+def process_score(scored, targets, seed=SEED, folds=7):
     # LOCATE DRUGS
     vc = scored.drug_id.value_counts()
     vc1 = vc.loc[vc<=18].index.sort_values()
@@ -142,7 +144,7 @@ def process_score(scored, targets, seed=42, folds=7):
     scored.kfold = scored.kfold.astype('int8')
     return scored
 
-def prepare(train, test, scored, targets, fe):
+def prepare(train, test, scored, targets, fe=False):
     train, test = process(train, test, fe)
     scored = process_score(scored, targets)
     
@@ -151,8 +153,8 @@ def prepare(train, test, scored, targets, fe):
     folds = folds[folds['cp_type']!='ctl_vehicle'].reset_index(drop=True)
     test  = test [test ['cp_type']!='ctl_vehicle'].reset_index(drop=True)
 
-    folds = folds.drop('cp_type', axis=1)
-    test  = test.drop ('cp_type', axis=1)
+    # folds = folds.drop('cp_type', axis=1)
+    # test  = test.drop ('cp_type', axis=1)
 
     # converting column names to str
     folds.columns = [str(c) for c in folds.columns.values.tolist()]
@@ -165,7 +167,7 @@ def prepare(train, test, scored, targets, fe):
     target_cols = scored.drop(['sig_id', 'kfold', 'drug_id'], axis=1).columns.values.tolist()
 
     # features columns
-    to_drop = target_cols + ['sig_id', 'kfold', 'drug_id']
+    to_drop = target_cols + ['sig_id', 'kfold', 'drug_id','cp_type']
     feature_cols = [c for c in folds.columns if c not in to_drop]
     
     return folds, test, feature_cols, target_cols
