@@ -50,7 +50,11 @@ class MoADataModule(pl.LightningDataModule):
             targets = train_targets_scored.columns[1:]
             train_targets_scored = train_targets_scored.merge(drug, on='sig_id', how='left') 
 
-            folds, test, feature_cols, target_cols = prepare(train_features, test_features, train_targets_scored, targets, self.fe)
+            folds, test, feature_cols, target_cols = prepare(train_features, 
+                                                             test_features, 
+                                                             train_targets_scored, 
+                                                             targets, 
+                                                             self.fe)
             
             self.drive_path.mkdir(exist_ok=True)
             
@@ -66,10 +70,8 @@ class MoADataModule(pl.LightningDataModule):
 
     def setup(self, stage=0):
         # Train
-        train = pd.read_csv(self.drive_path/'folds.csv')
-        cols  = joblib.load(self.drive_path/'columns.pkl')
-        feature_cols, target_cols = cols['features'], cols['targets']
-
+        train = folds.copy()
+        
         self.trn_idx = train[train['kfold'] != self.fold].index
         self.val_idx = train[train['kfold'] == self.fold].index
 
