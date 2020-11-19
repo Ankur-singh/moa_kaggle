@@ -1,3 +1,12 @@
+## Public -> CV
+---------------
+- 0.01925 -> 0.016583 (07 models) (2048, 2048)
+- 0.01902 -> 0.016455 (07 models) (2048, 1024)
+- 0.01900 -> 0.016268 (49 models) (2048, 1024)
+
+- Driving License
+- Laptop battery
+
 ## Ideas ##
 -----------
 - Feature Engineering (worked) and Loss smoothing (didn't work) for training. Refer: https://www.kaggle.com/kushal1506/moa-pytorch-feature-engineering-0-01846
@@ -7,6 +16,7 @@
 Use non-Scored training set
 ---------------------------
 - transfer learning. Take a high preforming model, make predictions and then train the model on the complete dataset again. Just like pseudo labeling. Refer https://www.kaggle.com/kailex/moa-transfer-recipe-with-smoothing
+- https://www.kaggle.com/kushal1506/moa-pretrained-non-scored-targets-as-meta-features
 
 
 Use train_drugs.csv - Done

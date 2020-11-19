@@ -173,27 +173,32 @@ def prepare(train, test, scored, targets, fe=False):
 if __name__ == "__main__":
     import sys
     import joblib
+    from pathlib import Path
     
     path = sys.argv[1]
-
-    train_features = pd.read_csv(f'{path}/train_features.csv')
-    test_features  = pd.read_csv(f'{path}/test_features.csv')
-    train_targets_scored = pd.read_csv(f'{path}/train_targets_scored.csv')
-    drug = pd.read_csv(f'{path}/train_drug.csv')
+    path = Path(path)
+    
+    print('Reading data . . . ')
+    train_features = pd.read_csv(path/'train_features.csv')
+    test_features  = pd.read_csv(path/'test_features.csv')
+    train_targets_scored = pd.read_csv(path/'train_targets_scored.csv')
+    drug = pd.read_csv(path/'train_drug.csv')
     
     targets = train_targets_scored.columns[1:]
     train_targets_scored = train_targets_scored.merge(drug, on='sig_id', how='left') 
 
+    print('Preparing data . . . ')
     folds, test, feature_cols, target_cols = prepare(train_features, 
                                                      test_features, 
                                                      train_targets_scored, 
                                                      targets)
     
-    print(folds.shape)
-    print(test.shape)
+    print(f'FOLDS: {folds.shape}')
+    print(f'TEST: {test.shape}')
     print(f'Targets : {len(target_cols)}')
     print(f'Features : {len(feature_cols)}')
     
+    print('Saving data . . . ')
     folds.to_csv(path/'folds.csv', index=False)
     test .to_csv(path/'test.csv' , index=False)
     columns = {'features': feature_cols, 'targets': target_cols}
