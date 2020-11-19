@@ -9,18 +9,16 @@ import warnings
 warnings.filterwarnings('ignore')
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
-SEED = 42
-
 ## Data Utils functions
 def RankGauss(train, test, cols):
-    transformer = QuantileTransformer(n_quantiles=100, random_state=SEED, output_distribution="normal")
+    transformer = QuantileTransformer(n_quantiles=100, output_distribution="normal")
     train[cols] = transformer.fit_transform(train[cols])
     test [cols] = transformer.transform(test[cols])
     return train, test
 
 def get_pca(train, test, cols, n_comp, prefix):
     data = pd.concat([train[cols], test[cols]])
-    data2 = (PCA(n_components=n_comp, random_state=SEED).fit_transform(data[cols]))
+    data2 = (PCA(n_components=n_comp).fit_transform(data[cols]))
     train2 = data2[:train.shape[0]] 
     test2  = data2[-test.shape[0]:]
 
@@ -51,7 +49,7 @@ def select_features(train, test):
     test = pd.concat([test, pd.DataFrame(test_transformed)], axis=1)
     return train, test
 
-def fe_cluster(train, test, n_clusters_g=35, n_clusters_c=5, SEED=SEED):
+def fe_cluster(train, test, n_clusters_g=35, n_clusters_c=5):
     
     features_g = list(train.columns[4:776])
     features_c = list(train.columns[776:876])
@@ -60,11 +58,11 @@ def fe_cluster(train, test, n_clusters_g=35, n_clusters_c=5, SEED=SEED):
         train_ = train[features].copy()
         test_ = test[features].copy()
         data = pd.concat([train_, test_], axis = 0)
-        kmeans = KMeans(n_clusters = n_clusters, random_state = SEED).fit(data)
+        kmeans = KMeans(n_clusters = n_clusters).fit(data)
         train[f'clusters_{kind}'] = kmeans.labels_[:train.shape[0]]
         test[f'clusters_{kind}'] = kmeans.labels_[train.shape[0]:]
         train = pd.get_dummies(train, columns = [f'clusters_{kind}'])
-        test = pd.get_dummies(test, columns = [f'clusters_{kind}'])
+        test  = pd.get_dummies(test , columns = [f'clusters_{kind}'])
         return train, test
     
     train, test = create_cluster(train, test, features_g, kind = 'g', n_clusters = n_clusters_g)
@@ -116,7 +114,7 @@ def process(train, test, fe):
         train, test = fe_stats  (train, test)
     return train, test
 
-def process_score(scored, targets, seed=SEED, folds=7):
+def process_score(scored, targets, folds=7):
     # LOCATE DRUGS
     vc = scored.drug_id.value_counts()
     vc1 = vc.loc[vc<=18].index.sort_values()
@@ -124,14 +122,14 @@ def process_score(scored, targets, seed=SEED, folds=7):
 
     # STRATIFY DRUGS 18X OR LESS
     dct1 = {}; dct2 = {}
-    skf = MultilabelStratifiedKFold(n_splits=folds, shuffle=True, random_state=seed)
+    skf = MultilabelStratifiedKFold(n_splits=folds, shuffle=True)
     tmp = scored.groupby('drug_id')[targets].mean().loc[vc1]
     for fold,(idxT,idxV) in enumerate( skf.split(tmp,tmp[targets])):
         dd = {k:fold for k in tmp.index[idxV].values}
         dct1.update(dd)
     
     # STRATIFY DRUGS MORE THAN 18X
-    skf = MultilabelStratifiedKFold(n_splits=folds, shuffle=True, random_state=seed)
+    skf = MultilabelStratifiedKFold(n_splits=folds, shuffle=True)
     tmp = scored.loc[scored.drug_id.isin(vc2)].reset_index(drop=True)
     for fold,(idxT,idxV) in enumerate( skf.split(tmp,tmp[targets])):
         dd = {k:fold for k in tmp.sig_id[idxV].values}
