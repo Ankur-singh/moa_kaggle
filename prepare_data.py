@@ -175,14 +175,14 @@ if __name__ == "__main__":
     import joblib
     from pathlib import Path
     
-    path = sys.argv[1]
-    path = Path(path)
-    
-    print('Reading data . . . ')
-    train_features = pd.read_csv(path/'train_features.csv')
-    test_features  = pd.read_csv(path/'test_features.csv')
-    train_targets_scored = pd.read_csv(path/'train_targets_scored.csv')
-    drug = pd.read_csv(path/'train_drug.csv')
+    in_path = Path(sys.argv[1])
+    out_path = Path(sys.argv[2]) if len(sys.argv) > 2 else in_path
+
+    print(f'Reading data from {in_path} . . . ')
+    train_features = pd.read_csv(in_path/'train_features.csv')
+    test_features  = pd.read_csv(in_path/'test_features.csv')
+    train_targets_scored = pd.read_csv(in_path/'train_targets_scored.csv')
+    drug = pd.read_csv(in_path/'train_drug.csv')
     
     targets = train_targets_scored.columns[1:]
     train_targets_scored = train_targets_scored.merge(drug, on='sig_id', how='left') 
@@ -198,8 +198,9 @@ if __name__ == "__main__":
     print(f'Targets : {len(target_cols)}')
     print(f'Features : {len(feature_cols)}')
     
-    print('Saving data . . . ')
-    folds.to_csv(path/'folds.csv', index=False)
-    test .to_csv(path/'test.csv' , index=False)
+    print(f'Saving data to {out_path} . . . ')
+    out_path.mkdir(exists=True)
+    folds.to_csv(out_path/'folds.csv', index=False)
+    test .to_csv(out_path/'test.csv' , index=False)
     columns = {'features': feature_cols, 'targets': target_cols}
-    joblib.dump(columns, path/'columns.pkl')
+    joblib.dump(columns, out_path/'columns.pkl')

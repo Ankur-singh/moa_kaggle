@@ -3,9 +3,14 @@
 - 0.01925 -> 0.016583 (07 models) (2048, 2048)
 - 0.01902 -> 0.016455 (07 models) (2048, 1024)
 - 0.01900 -> 0.016268 (49 models) (2048, 1024)
+- 0.01867 -> 0.015944 (7+7 models) (2048, 1024)
+
+- xxxxxxx -> 0.017485 (07 models) (tabnet)
 
 - Driving License
 - Laptop battery
+
+https://www.kaggle.com/cdeotte/rapids-genetic-algorithm-knn-cv-0-01840
 
 ## Ideas ##
 -----------
